@@ -1,0 +1,27 @@
+---
+
+- name: Create ssl dir if missing
+  file: 
+    state: directory 
+    dest: "{{ mongodb_ssl_dir }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy ca.crt
+  copy:
+    src: "./files/ca.crt"
+    dest: "{{ mongodb_ssl_dir }}/ca.crt"
+    owner: "{{ mongodb_user }}"
+    group: "{{ mongodb_user }}"
+    mode: 0600
+  when: mongodb_ssl
+
+- name: Copy ssl files
+  copy:
+    src: "./files/{{ inventory_hostname }}.{{ mongodb_ssl_domain }}.pem"
+    dest: "{{ mongodb_ssl_dir }}/{{ inventory_hostname }}.{{ mongodb_ssl_domain }}.pem"
+    owner: "{{ mongodb_user }}"
+    group: "{{ mongodb_user }}"
+    mode: 0600
+  when: mongodb_ssl

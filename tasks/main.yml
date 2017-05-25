@@ -18,17 +18,58 @@
       - "ansible_distribution_release == 'xenial' or ansible_distribution_release == 'trusty'"
     msg: "Distribution must be Ubuntu Xenial or Trusty."
 
-- name: Include Ubuntu Xenial specific tasks
-  include: xenial.yml
-  when: 
-    - ansible_distribution_release == 'xenial'
+#- name: Include installation on Debian-based OS
+#  include: install_deb.yml
+#  when: ansible_os_family == 'Debian'
 
-- name: Include Ubuntu Trusty specific tasks
-  include: trusty.yml
-  when: 
-    - ansible_distribution_release == 'trusty'
+- name: Include SSL
+  include: ssl.yml
 
-- name: Include tests.yml
-  include: tests.yml
-  when: 
-    - tests_enabled
+#- name: Include configuration.yml
+#  include: configure.yml
+
+#- name: Include replication and auth configuration
+#  include: replication_init_auth.yml
+#  when: ( mongodb_replication_replset
+#        and mongodb_replication_replset != ''
+#        and mongodb_security_authorization == 'enabled'
+#        and mongodb_master is defined and mongodb_master )
+
+#- name: Include replication configuration
+#  include: replication.yml
+#  when: mongodb_replication_replset and mongodb_replication_replset != ''
+
+#- name: Check user admin is exists
+#  command: >
+#    mongo --quiet -u {{ mongodb_user_admin_name }} \
+#          -p {{ mongodb_user_admin_password }} --port {{ mongodb_net_port }} --eval 'db.version()' admin
+
+#  register: mongodb_user_admin_check
+#  changed_when: false
+#  check_mode: no # side-effect free, so it can be run in check-mode as well
+#  ignore_errors: true
+#  when: ( mongodb_security_authorization == 'enabled'
+#          and (not mongodb_replication_replset
+#          or mongodb_replication_replset == '') )
+#  no_log: true
+
+#- name: Include authorization configuration
+#  include: auth_initialization.yml
+#  when: mongodb_security_authorization == 'enabled'
+
+#  when: ( mongodb_security_authorization == 'enabled'
+#          and (not mongodb_replication_replset
+#          or mongodb_replication_replset == '')
+#          and mongodb_user_admin_check.rc != 0 )
+
+#- name: Include create_normal_users 
+#  include: create_normal_users.yml
+
+#- name: Include MMS Agent configuration
+#  include: mms-agent.yml
+#  when: mongodb_mms_api_key != ""
+
+#- name: Include tests.yml
+#  include: tests.yml
+#  when: 
+#    - tests_enabled
