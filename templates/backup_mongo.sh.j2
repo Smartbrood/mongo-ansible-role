@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MONGO_USER="{{ mongodb_root_admin_name }}"
+MONGO_PASS="{{ mongodb_root_admin_password }}"
+BACKUP_DIR=/backup
+TMP_DIR=`mktemp -d`
+HOSTNAME="{{ inventory_hostname }}"
+CA="/etc/ssl/ca.crt"
+CERT="/etc/ssl/${HOSTNAME}.pem"
+
+dump() {
+	mongodump --ssl  --sslAllowInvalidCertificates \
+      --host ${HOSTNAME} \
+      --sslCAFile ${CA} \
+      --sslPEMKeyFile ${CERT} \
+      --out ${TMP_DIR} \
+      -u ${MONGO_USER} \
+      -p ${MONGO_PASS}
+}
+
+pack() {
+	dow=`date +%u`
+	dom=`date +%e`
+
+	if [ ! -d ${BACKUP_DIR} ] ; then
+		mkdir -p ${BACKUP_DIR}
+	fi
+
+	if [ ${dom} == "01" ] ; then
+		tar -cvzf ${BACKUP_DIR}/mongo_backup_month_slot.tar.gz ${TMP_DIR}/*
+	elif [ ${dow} == "7" ] ; then
+		tar -cvzf ${BACKUP_DIR}/mongo_backup_week_slot.tar.gz ${TMP_DIR}/*
+	else
+		tar -cvzf ${BACKUP_DIR}/mongo_backup_day_slot.tar.gz ${TMP_DIR}/*
+	fi
+
+	rm -rf ${TMP_DIR}
+}
+
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+	dump
+	pack
+fi
